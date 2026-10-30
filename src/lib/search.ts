@@ -39,3 +39,17 @@ export async function searchProducts(query: string): Promise<Product[]> {
     .sort((a, b) => b.score - a.score || Number(b.p.inStock) - Number(a.p.inStock) || b.p.popularity - a.p.popularity)
     .map((r) => r.p);
 }
+
+export const SORTS = { relevance: "Best match", "price-asc": "Price: low to high", "price-desc": "Price: high to low" } as const;
+export type SortKey = keyof typeof SORTS;
+
+export function parseSort(value: string | undefined): SortKey {
+  return value && value in SORTS ? (value as SortKey) : "relevance";
+}
+
+/** Re-orders ranked results; "relevance" keeps the ranking from searchProducts. */
+export function sortProducts(products: Product[], sort: SortKey): Product[] {
+  if (sort === "price-asc") return [...products].sort((a, b) => a.priceCents - b.priceCents);
+  if (sort === "price-desc") return [...products].sort((a, b) => b.priceCents - a.priceCents);
+  return products;
+}
