@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  newsletter   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  orders       Order[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  name        String
+  description String
+  category    String
+  tags        String[]
+  priceCents  Int
+  imageCount  Int         @default(3)
+  popularity  Int         @default(0)
+  inStock     Boolean     @default(true)
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  number        Int         @unique
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  status        String      @default("paid")
+  subtotalCents Int
+  discountCents Int         @default(0)
+  totalCents    Int
+  promoCode     String?
+  shippingName  String
+  shippingLine1 String
+  shippingCity  String
+  shippingZip   String
+  stripeSession String?     @unique
+  createdAt     DateTime    @default(now())
+  items         OrderItem[]
+
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  priceCents Int
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
