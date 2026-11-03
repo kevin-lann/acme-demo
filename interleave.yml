@@ -1,0 +1,44 @@
+# Drafted by Interleave (deterministic). Commit it so PR runs use the same recipe.
+# Why each value was chosen: interleave.provenance.json. Schema: https://interleave.dev/schema/interleave.json
+version: 1
+runtimes:
+  pnpm: 10.34.7
+  node: "26.8"
+services:
+  postgres:
+    version: "16"
+    port: 5432
+    db: acme
+    user: acme
+    password: acme
+  redis:
+    version: "7"
+    port: 6379
+apps:
+  web:
+    cwd: .
+    install: pnpm install --frozen-lockfile
+    build: null
+    start: pnpm run dev
+    port: 3000
+    role: ui
+    health:
+      path: /api/health
+      mode: http-any
+      timeout: 180s
+setup:
+  - pnpm exec prisma migrate deploy
+  - run: pnpm run db:seed
+    soft: true
+env:
+  DATABASE_URL: postgresql://acme:acme@localhost:5432/acme?schema=public
+  REDIS_URL: redis://localhost:6379
+  NEXTAUTH_URL: secret://NEXTAUTH_URL
+  NEXTAUTH_SECRET: secret://generated/NEXTAUTH_SECRET
+  STRIPE_SECRET_KEY: ""
+  NODE_ENV: development
+integrations: {}
+auth:
+  strategy: credentials
+  username: ada@acme.test
+  password: acme-demo-123
