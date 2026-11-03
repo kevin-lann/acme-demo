@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
 import { db } from "@/lib/db";
-import { searchProducts } from "@/lib/search";
+import { parseSort, SORTS, searchProducts, sortProducts } from "@/lib/search";
 
 export const metadata: Metadata = { title: "Search" };
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q = "" } = await searchParams;
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; sort?: string }> }) {
+  const { q = "", sort: sortParam } = await searchParams;
   const query = q.trim();
-  const results = query ? await searchProducts(query) : await db.product.findMany({ orderBy: { name: "asc" } });
+  const sort = parseSort(sortParam);
+  const ranked = query ? await searchProducts(query) : await db.product.findMany({ orderBy: { name: "asc" } });
+  const results = sortProducts(ranked, sort);
 
   return (
     <div className="space-y-6">
@@ -23,6 +25,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           className="input"
           data-testid="search-input"
         />
+        <select name="sort" defaultValue={sort} aria-label="Sort results" className="input w-auto" data-testid="search-sort">
+          {Object.entries(SORTS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
         <button type="submit" className="btn-primary" data-testid="search-submit">
           Search
         </button>
