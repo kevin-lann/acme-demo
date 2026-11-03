@@ -33,7 +33,7 @@ setup:
 env:
   DATABASE_URL: postgresql://acme:acme@localhost:5432/acme?schema=public
   REDIS_URL: redis://localhost:6379
-  NEXTAUTH_URL: secret://NEXTAUTH_URL
+  NEXTAUTH_URL: http://localhost:3000
   NEXTAUTH_SECRET: secret://generated/NEXTAUTH_SECRET
   STRIPE_SECRET_KEY: ""
   NODE_ENV: development
